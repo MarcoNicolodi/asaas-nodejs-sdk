@@ -3,6 +3,7 @@ var https = require('https');
 var qs = require('querystring');
 exports = module.exports = {}
 
+console.log(this);
 
 var settings = {
 	setAccessToken: function (access_token){
@@ -137,7 +138,7 @@ var customer = {
 		apiCall('/api/v2/customers/'+id,'GET',callback);
 	},
 	getByEmail: function(email){
-		apiCall('/api/v2/customers?email='email,'GET',callback);
+		apiCall('/api/v2/customers?email='+email,'GET',callback);
 	},
 	create: function(data,callback){
 		apiCall('/api/v2/customers','POST',callback,data);
@@ -200,7 +201,7 @@ var subscription = {
 	}
 }
 
-var city = {
+var cities = {
 	get: function(filters,callback){
 		var uri = filters ? '/api/v2/cities?' + qs.stringify(filters) : '/api/v2/cities';
 		apiCall(uri,'GET',callback);
@@ -209,7 +210,7 @@ var city = {
 		apiCall('/api/v2/cities/'+id,'GET',callback);
 	},
 	getByName: function(name,callback){
-		apiCall('/api/v2/cities&name='+name,'GET',callback);
+		apiCall('/api/v2/cities?name='+name,'GET',callback);
 	}
 
 }
@@ -217,5 +218,5 @@ var city = {
 exports.payment = payment;
 exports.customer = customer;
 exports.subscription = subscription;
-exports.city = city;
+exports.cities = cities;
 exports.settings = settings;

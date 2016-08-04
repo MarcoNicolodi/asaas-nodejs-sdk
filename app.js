@@ -23,13 +23,22 @@ asaas.settings.setEnvironment('homologacao');
 // 	}
 // });
 
+asaas.cities.getByName('florianopolis',function(err,data){
+	if(err){
+		console.log(err);
+		console.log('error');
+	} else {		
+		console.log(data)
+		console.log('success');
+	}
+})
+
 asaas.payment.getAll({status:'OVERDUE'},function(err, data){
 	if(err){
 		console.log(err);
 		console.log('error');
-	} else {
-		
-		console.log(data)
-		console.log('success');
+	} else {		
+		// console.log(data)
+		// console.log('success');
 	}
 });
