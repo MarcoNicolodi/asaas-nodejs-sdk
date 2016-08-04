@@ -4,8 +4,6 @@ var qs = require('querystring');
 exports = module.exports = {}
 
 
-
-
 var settings = {
 	setAccessToken: function (access_token){
 		this.access_token = access_token;
@@ -91,16 +89,40 @@ function apiCall(path,method,callback,postData){
 
 		break;
 		case 'producao':
-			https.request(options, function(res){
-				var data = '';
+			var req = https.request(options, function(res){
+				switch(res.statusCode){
+					case 401:
+						return callback('Unauthorized',null);
+					break;
+					case 404:
+						return callback('Not found',null);
+					break;
+					case 500:
+						return callback('Internal server error',null);
+					break;
+				}
+
+				data = '';
 				res.on('data', function(chunk){
 					data += chunk.toString();
+
 				});
-				res.on('end',function(){
-					return data;
+				res.on('error',function(err){
+					return callback(err,null);
 				})
-			}).end();
-			
+				res.on('end',function(){
+					return callback(null,JSON.parse(data));
+					
+				})
+					
+			})
+			req.on('error',function(err){
+				return callback(err,null);
+			});
+			if(postData){				
+				req.write(qs.stringify(postData));
+			}
+			req.end();
 		break;
 	}
 
@@ -108,77 +130,92 @@ function apiCall(path,method,callback,postData){
 
 var customer = {
 	getAll: function(filters,callback){
-		apiCall('/api/v2/customers','GET',callback);
+		var uri = filters ? '/api/v2/customers?'+qs.stringify(filters) : '/api/v2/customers';
+		apiCall(uri,'GET',callback);
 	},
 	getById: function(id,callback){
 		apiCall('/api/v2/customers/'+id,'GET',callback);
 	},
 	getByEmail: function(email){
-
+		apiCall('/api/v2/customers?email='email,'GET',callback);
 	},
 	create: function(data,callback){
-		apiCall('/api/v2/customers','POST',callback,data)
+		apiCall('/api/v2/customers','POST',callback,data);
 	},
-	update: function(id, data){
-
+	update: function(id, data,callback){
+		apiCall('/api/v2/customers/'+id,'POST',callback,data);
 	},
 	delete: function(id){
-
+		apiCall('/api/v2/customers/'+id,'DELETE',callback);
 	}
 }
 
 var payment = {
 	getAll: function(filters,callback){
-		var uri = filters ? '/api/v2/payments?'+qs.stringify(filters) : '/api/v2/payments';
-		console.log(uri);
+		var uri = filters ? '/api/v2/payments?'+qs.stringify(filters) : '/api/v2/payments';		
 		apiCall(uri,'GET',callback)
 	},	
-	getById: function(id){
-
+	getById: function(id,callback){
+		apiCall('/api/v2/payments/'+id,callback);
 	},
-	getByCustomer: function(customer_id){
-
+	getByCustomer: function(filters,customer_id,callback){
+		var uri = filters ? '/api/v2/customers/'+customer_id+'/payments?'+qs.stringify(filters) : '/api/v2/customers/'+customer_id+'/payments';
+		apiCall(uri,'GET',callback);
 	},
-	getBySubscription: function(subscription_id){
-
+	getBySubscription: function(filters, subscription_id,callback){
+		var uri = filters ? '/api/v2/subscriptions/'+subscription_id+'/payments?'+qs.stringify(filters) : '/api/v2/subscriptions/'+subscription_id+'/payments';
+		apiCall(uri,'GET',callback);
 	},
-	create: function(data){
-
+	create: function(data,callback){
+		apiCall('/api/v2/payments','POST',callback,data);
 	},
-	update: function(id,data){
-
+	update: function(id,data,callback){
+		apiCall('/api/v2/payments/'+id,'POST',callback,data);
 	},
-	delete: function(id){
-
+	delete: function(id,callback){
+		apiCall('/api/v2/payments/'+id,'DELETE',callback);
 	}
 }
 
 var subscription = {
-	getAll: function(filters){
-
+	getAll: function(filters,callback){
+		var uri = filters ? '/api/v2/subscriptions'+qs.stringify(filters) : '/api/v2/subscriptions';
+		apiCall(uri,'GET',callback)
 	},
-	getById: function(id){
-
+	getById: function(id,callback){
+		apiCall('/api/subscriptions/'+id,callback);
 	},
-	getByCustomer: function(customer_id){
-
+	getByCustomer: function(filters, customer_id,callback){
+		var uri = filters ? '/api/v2/customers/'+customer_id+'/subscriptions?'+qs.stringify(filters) : '/api/v2/customers/'+customer_id+'/subscriptions';  
+		apiCall(uri,'GET',callback);
 	},
-	create: function(data){
-
+	create: function(data,callback){
+		apiCall('/api/v2/subscriptions','POST',callback,data);
 	},
-	update: function(id,data){
-
+	update: function(id,data,callback){
+		apiCall('/api/v2/subscriptions/'+id,'POST',callback,data);
 	},
-	delete: function(id){
-
+	delete: function(id,callback){	
+		apiCall('/api/v2/subscriptions/'+id,'DELETE',callback);
 	}
 }
 
 var city = {
+	get: function(filters,callback){
+		var uri = filters ? '/api/v2/cities?' + qs.stringify(filters) : '/api/v2/cities';
+		apiCall(uri,'GET',callback);
+	},
+	getById: function(id,callback){
+		apiCall('/api/v2/cities/'+id,'GET',callback);
+	},
+	getByName: function(name,callback){
+		apiCall('/api/v2/cities&name='+name,'GET',callback);
+	}
 
 }
 
 exports.payment = payment;
 exports.customer = customer;
 exports.subscription = subscription;
+exports.city = city;
 exports.settings = settings;
