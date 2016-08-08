@@ -3,8 +3,6 @@ var https = require('https');
 var qs = require('querystring');
 exports = module.exports = {}
 
-console.log(this);
-
 var settings = {
 	setAccessToken: function (access_token){
 		this.access_token = access_token;
