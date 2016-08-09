@@ -90,6 +90,7 @@ function apiCall(path,method,callback,postData){
 		case 'producao':
 			var req = https.request(options, function(res){
 				switch(res.statusCode){
+
 					case 401:
 						return callback('Unauthorized',null);
 					break;
